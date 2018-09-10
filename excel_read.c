@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include "excel_read.h"
 
 #define PATH_LENGTH 256
 #define COMMAND_LENGTH 256
@@ -36,8 +37,6 @@ typedef struct floatData {
 */
 
 /* プロトタイプ宣言--------------------------------------------------------------------------------------------------------------------------------------------------- */
-/*void xlsx_nums_read(void *buf, const char *path, char *sheet);*/
-/*void xlsx_nums_read_from_cells(void *buf, const char *path, char *sheet, int cell_num, ...);*/
 static char *xlsx2zip(const char *path);
 static void unzip(const char *zip_path);
 static char *sheet_file_path_get(char *sheet, char *zip_path);
