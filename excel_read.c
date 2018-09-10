@@ -12,7 +12,7 @@
 #define MOVE_TO_ID 11
 #define MOVE_TO_STRING_EXPRESSION 6
 
-/*型判別用の構造体　多分使わない
+/*型判別用の構造体
 enum type_of_number {
 	TYPE_INT = 0,
 	TYPE_DOUBLE,
@@ -36,14 +36,21 @@ typedef struct floatData {
 */
 
 /* プロトタイプ宣言--------------------------------------------------------------------------------------------------------------------------------------------------- */
-void xlsx_nums_read(void *buf, const char *path, char *sheet); /* 指定したXLSXファイルのシートから値を buf に格納する関数 */
-void xlsx_nums_read_from_cells(void *buf, const char *path, char *sheet, int cell_num, ...);
-static char *xlsx2zip(const char *path); /* 指定したファイルをコピーしてコピーファイルをZIP形式にする関数 */
-static void unzip(const char *zip_path); /* 指定したZIP形式ファイルを展開する関数 */
-static char *sheet_file_path_get(char *sheet, char *zip_path); /* 指定されたシート名に対応するファイルのパスを返す関数 */
-static void remove_expanded_data(char *zip_path); /* 作成されたZIPファイルおよび展開されたファイル・フォルダを削除する関数 */
+/*void xlsx_nums_read(void *buf, const char *path, char *sheet);*/
+/*void xlsx_nums_read_from_cells(void *buf, const char *path, char *sheet, int cell_num, ...);*/
+static char *xlsx2zip(const char *path);
+static void unzip(const char *zip_path);
+static char *sheet_file_path_get(char *sheet, char *zip_path);
+static void remove_expanded_data(char *zip_path);
 
-/* 指定したXLSXファイルのシートから値を buf に格納する関数 */
+
+/************************************************************
+* 関数名：xlsx_nums_read
+* 機能：指定したXLSXファイルのシートから指定された変数に値を格納する関数
+* 引数： buf 値を格納したい変数のアドレスを指定
+*		path XLSXファイルのパスを文字列で指定
+*		sheet XLSXファイルのシート名を文字列で指定
+ ************************************************************/
 void xlsx_nums_read(void *buf, const char *path, char *sheet)
 {
 	FILE *fp;
@@ -109,6 +116,16 @@ void xlsx_nums_read(void *buf, const char *path, char *sheet)
 	remove_expanded_data(zip_path);
 }
 
+
+/************************************************************
+* 関数名：xlsx_nums_read_from_cells
+* 機能：指定したXLSXファイルのシート及びセルから指定された変数に値を格納する関数
+* 引数： buf 値を格納したい変数のアドレスを指定
+*		path XLSXファイルのパスを文字列で指定
+*		sheet XLSXファイルのシート名を文字列で指定
+*		cell_num 対象とするセルの個数を指定
+*		... 対象とするセル名をカンマ区切りで指定
+ ************************************************************/
 void xlsx_nums_read_from_cells(void *buf, const char *path, char *sheet, int cell_num, ...)
 {
 	FILE *fp;
@@ -201,7 +218,12 @@ void xlsx_nums_read_from_cells(void *buf, const char *path, char *sheet, int cel
 	free(cells_name);
 }
 
-/* 指定したファイルをコピーしてコピーファイルをZIP形式にする関数 */
+
+/************************************************************
+* 関数名：xlsx2zip
+* 機能：指定したファイルをコピーしてコピーファイルをZIP形式にする関数
+* 引数： path XLSXファイルのパスを文字列で指定
+ ************************************************************/
 static char *xlsx2zip(const char *path)
 {
 	unsigned int insert;
@@ -232,10 +254,17 @@ static char *xlsx2zip(const char *path)
 	rename(copy_path, zip_path);
 
 	p = zip_path;
+
+	/* 作成したZIP形式ファイルのパスを返す */
 	return p;
 }
 
-/* 指定したZIP形式ファイルを展開する関数 */
+
+/************************************************************
+* 関数名：unzip
+* 機能： 指定したZIP形式ファイルを展開する関数
+* 引数： zip_path 作成したZIP形式ファイルのパスを指定
+ ************************************************************/
 static void unzip(const char *zip_path)
 {
 	char expand_command[COMMAND_LENGTH];
@@ -247,7 +276,13 @@ static void unzip(const char *zip_path)
 	system(expand_command);
 }
 
-/* 指定されたシート名に対応するファイルのパスを返す関数 */
+
+/************************************************************
+* 関数名：sheet_file_path_get
+* 機能：指定されたシート名に対応するファイルのパスを返す関数
+* 引数： sheet XLSXファイルのシート名を文字列で指定
+*		zip_path 作成したZIP形式ファイルのパスを指定
+ ************************************************************/
 static char *sheet_file_path_get(char *sheet, char *zip_path)
 {
 	FILE *fp;
@@ -298,7 +333,12 @@ static char *sheet_file_path_get(char *sheet, char *zip_path)
 	return ret;
 }
 
-/* 作成されたZIPファイルおよび展開されたファイル・フォルダを削除する関数 */
+
+/************************************************************
+* 関数名：remove_expanded_data
+* 機能：作成されたZIPファイルおよび展開されたファイル・フォルダを削除する関数
+* 引数： zip_path 作成されたZIP形式ファイルのパスを指定
+ ************************************************************/
 static void remove_expanded_data(char *zip_path)
 {
 	char files_remove_command[COMMAND_LENGTH];
