@@ -13,29 +13,6 @@
 #define MOVE_TO_ID 11
 #define MOVE_TO_STRING_EXPRESSION 6
 
-/*型判別用の構造体
-enum type_of_number {
-	TYPE_INT = 0,
-	TYPE_DOUBLE,
-	TYPE_FLOAT,
-};
-
-typedef struct intData {
-	char id;
-	int data;
-};
-
-typedef struct doubleData {
-	char id;
-	double data;
-};
-
-typedef struct floatData {
-	char id;
-	float data;
-};
-*/
-
 /* プロトタイプ宣言--------------------------------------------------------------------------------------------------------------------------------------------------- */
 static char *xlsx2zip(const char *path);
 static void unzip(const char *zip_path);
@@ -55,7 +32,6 @@ void xlsx_nums_read(void *buf, const char *path, char *sheet)
 	FILE *fp;
 	char *zip_path;
 	int *intp = (int *)buf;
-	/* double *doublep = (double *)buf; */ /* double型未実装 */
 	char tmp[5000]; /* XMLファイルのデータ格納用 */
 	char *scan; /* データ走査用ポインタ */
 	int i = 0;
@@ -94,7 +70,7 @@ void xlsx_nums_read(void *buf, const char *path, char *sheet)
 			/* セルに格納されているデータが文字列か数字かを判別 */
 			if((strncmp((scan - MOVE_TO_STRING_EXPRESSION), STRING_EXPRESSION, strlen(STRING_EXPRESSION))))
 			{
-				/* 数字を数値に変換(double型)して引数で渡された配列に格納 */
+				/* 数字を数値に変換(int型)して引数で渡された配列に格納 */
 				intp[i++] = atoi(scan + strlen(START_TAG));
 				/* printf("number[%d] = %lf\n", i, doublep[i]); */
 			}
@@ -130,7 +106,6 @@ void xlsx_nums_read_from_cells(void *buf, const char *path, char *sheet, int cel
 	FILE *fp;
 	char *zip_path;
 	int *intp = (int *)buf;
-	/* double *doublep = (double *)buf; */ /* double型未実装 */
 	char tmp[5000]; /* XMLファイルのデータ格納用 */
 	char *scan; /* データ走査用ポインタ */
 	int i;
@@ -148,11 +123,10 @@ void xlsx_nums_read_from_cells(void *buf, const char *path, char *sheet, int cel
 	memset(cells_name, NULL, cell_num * sizeof(cells_name));
 
 	/* 可変長引数に渡されたセル名を取得 */
-	va_start(args, cell_num);
+	va_start(args, cell_num);		/* va_listの初期化 */
 	for(i = 0; i < cell_num; i++)
 	{
-		cells_name[i] = va_arg(args, char *);
-		/* printf("%s\n", cells_name[i]); */
+		cells_name[i] = va_arg(args, char *);	/* 可変長引数にアクセスしてセル名を取得 */
 	}
 
 	/* path に指定されたXLSXファイルのコピーファイルをZIP化 */
@@ -160,7 +134,7 @@ void xlsx_nums_read_from_cells(void *buf, const char *path, char *sheet, int cel
 	/* ZIP化したファイルを展開 */
 	unzip(zip_path);
 
-	/* 指定したシート名に対応するデータが記述されているファイルのパスを取得 */
+	/* 指定したシート名に対応するデータが記述されているファイル(展開されたフォルダに含まれるファイル)のパスを取得 */
 	sheet = sheet_file_path_get(sheet, zip_path);
 
 	/* 取得したシートファイルを開いて全てのデータを tmp に格納 */
@@ -190,7 +164,7 @@ void xlsx_nums_read_from_cells(void *buf, const char *path, char *sheet, int cel
 			/* セルに格納されているデータが文字列か数字かを判別 */
 			if((strncmp((scan - MOVE_TO_STRING_EXPRESSION), STRING_EXPRESSION, strlen(STRING_EXPRESSION))))
 			{
-				/* 数字を数値に変換(double型)して引数で渡された配列に格納 */
+				/* 数字を数値に変換(int型)して引数で渡された配列に格納 */
 				intp[i] = atoi(scan + strlen(START_TAG));
 				/* printf("number[%d] = %lf\n", i, doublep[i]); */
 			}
@@ -309,8 +283,7 @@ static char *sheet_file_path_get(char *sheet, char *zip_path)
 			idp = (strstr(tmp, sheet) + strlen(sheet) + MOVE_TO_ID);
 			id = atoi(idp);
 
-			/* sheet_path にシート名に対応するファイルのパスを格納 */
-			/* シート名に対応する各ファイルは、Excelのシートタブ左側から、sheet1.xml, sheet2.xml, sheet3.xml ... となっている */
+			/* sheet_path にシート名のIDに対応するファイルのパスを格納 */
 			sprintf(sheet_path, "xl\\worksheets\\sheet%d.xml", id);
 		}
 		else
